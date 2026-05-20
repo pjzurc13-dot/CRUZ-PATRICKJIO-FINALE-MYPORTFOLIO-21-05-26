@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZURC | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <main id="body-placeholder"></main>
+    <div id="footer-placeholder"></div>
+
+    <script>
+        // FETCH ALL COMPONENTS
+        Promise.all([
+            fetch('nav.html').then(res => res.text()),
+            fetch('body.html').then(res => res.text()),
+            fetch('footer.html').then(res => res.text())
+        ])
+        .then(([navHtml, bodyHtml, footerHtml]) => {
+            document.getElementById('nav-placeholder').innerHTML = navHtml;
+            document.getElementById('body-placeholder').innerHTML = bodyHtml;
+            document.getElementById('footer-placeholder').innerHTML = footerHtml;
+            initFeatures();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('body-placeholder').innerHTML = '<div style="text-align:center;padding:50px;color:red;">Error loading files. Make sure nav.html, body.html, footer.html exist.</div>';
+        });
+
+        function initFeatures() {
+            // Date and Time
+            function updateDateTime() {
+                const now = new Date();
+                const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const date = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+                const timeEl = document.getElementById('currentTime');
+                const dateEl = document.getElementById('currentDate');
+                if (timeEl) timeEl.textContent = time;
+                if (dateEl) dateEl.textContent = date;
+            }
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            // Smooth scroll
+            document.querySelectorAll('[data-scroll]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.getAttribute('data-scroll');
+                    const section = document.getElementById(target);
+                    if (section) section.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            // Navigation links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = link.getAttribute('data-section');
+                    const section = document.getElementById(sectionId);
+                    if (section) section.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            // Active nav
+            function updateActiveNav() {
+                const scrollPos = window.scrollY + 150;
+                let current = 'home';
+                ['home', 'projects', 'about', 'contact'].forEach(id => {
+                    const section = document.getElementById(id);
+                    if (section && scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
+                        current = id;
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-section') === current) link.classList.add('active');
+                });
+            }
+            window.addEventListener('scroll', updateActiveNav);
+            window.addEventListener('load', updateActiveNav);
+
+            // Mobile menu
+            const toggleBtn = document.getElementById('mobileToggle');
+            const navMenu = document.getElementById('navMenu');
+            if (toggleBtn && navMenu) {
+                toggleBtn.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                    const icon = toggleBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-times');
+                        icon.classList.toggle('fa-bars');
+                    }
+                });
+            }
+
+            // Search
+            const searchBtn = document.getElementById('searchBtn');
+            const searchInput = document.getElementById('searchInput');
+            if (searchBtn && searchInput) {
+                searchBtn.addEventListener('click', () => {
+                    const query = searchInput.value.trim();
+                    if (!query) return alert('Enter search term');
+                    alert(document.body.innerText.toLowerCase().includes(query.toLowerCase()) ? '🔍 Found results!' : '❌ No matches');
+                });
+            }
+
+            // Contact form
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('contactName')?.value.trim();
+                    const email = document.getElementById('contactEmail')?.value.trim();
+                    const msg = document.getElementById('contactMsg')?.value.trim();
+                    const feedback = document.getElementById('formFeedback');
+                    if (!name || !email || !msg) {
+                        feedback.style.color = '#f87171';
+                        feedback.textContent = '❌ All fields required';
+                        setTimeout(() => feedback.textContent = '', 3000);
+                        return;
+                    }
+                    if (!email.includes('@')) {
+                        feedback.style.color = '#f87171';
+                        feedback.textContent = '❌ Valid email required';
+                        setTimeout(() => feedback.textContent = '', 3000);
+                        return;
+                    }
+                    feedback.style.color = '#4ade80';
+                    feedback.textContent = `✅ Thanks ${name}! I'll reply soon.`;
+                    contactForm.reset();
+                    setTimeout(() => feedback.textContent = '', 4000);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
